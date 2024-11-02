@@ -1,0 +1,148 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           parallel-and-concurrent-programming-in-haskell
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/parallel-and-concurrent-programming-in-haskell#readme>
+homepage:       https://github.com/githubuser/parallel-and-concurrent-programming-in-haskell#readme
+bug-reports:    https://github.com/githubuser/parallel-and-concurrent-programming-in-haskell/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2024 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/parallel-and-concurrent-programming-in-haskell
+
+library
+  exposed-modules:
+      Concurrent.OverlappingIO.GetUrl
+      Concurrent.OverlappingIO.GetUrls1
+      Concurrent.OverlappingIO.GetUrls2
+      Concurrent.ThreadsAndMVars.Chan
+      Concurrent.ThreadsAndMVars.Fork
+      Concurrent.ThreadsAndMVars.Logger
+      Concurrent.ThreadsAndMVars.MVar1
+      Concurrent.ThreadsAndMVars.MVar2
+      Concurrent.ThreadsAndMVars.MVar3
+      Concurrent.ThreadsAndMVars.PhoneBook
+      Concurrent.ThreadsAndMVars.Reminders
+      Concurrent.ThreadsAndMVars.Reminders2
+      FwsParse.FwsParse
+      FwsParse.FwsParse1
+      FwsParse.SparseGraph
+      KMeans.Core
+      KMeans.GenSamples
+      KMeans.KMeans
+      Lib
+      MyKMeans
+      ParMonad
+      Rpar
+      RSA
+      RsaPipeline
+      Stream
+      Sudoku
+      Sudoku1
+      Sudoku2
+      Sudoku3
+  other-modules:
+      Paths_parallel_and_concurrent_programming_in_haskell
+  autogen-modules:
+      Paths_parallel_and_concurrent_programming_in_haskell
+  hs-source-dirs:
+      src
+  default-extensions:
+      TypeApplications
+      ImportQualifiedPost
+      NoStarIsType
+      LambdaCase
+      QuasiQuotes
+      OverloadedStrings
+      NoFieldSelectors
+      OverloadedRecordDot
+      DuplicateRecordFields
+      BlockArguments
+      PackageImports
+      PatternSynonyms
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , binary
+    , bytestring
+    , containers
+    , deepseq
+    , extra
+    , http-conduit
+    , monad-par
+    , normaldistribution
+    , parallel
+    , random
+    , text
+    , time
+    , vector
+  default-language: GHC2021
+
+executable parallel-and-concurrent-programming-in-haskell-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_parallel_and_concurrent_programming_in_haskell
+  autogen-modules:
+      Paths_parallel_and_concurrent_programming_in_haskell
+  hs-source-dirs:
+      app
+  default-extensions:
+      TypeApplications
+      ImportQualifiedPost
+      NoStarIsType
+      LambdaCase
+      QuasiQuotes
+      OverloadedStrings
+      NoFieldSelectors
+      OverloadedRecordDot
+      DuplicateRecordFields
+      BlockArguments
+      PackageImports
+      PatternSynonyms
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , parallel-and-concurrent-programming-in-haskell
+  default-language: GHC2021
+
+test-suite parallel-and-concurrent-programming-in-haskell-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_parallel_and_concurrent_programming_in_haskell
+  autogen-modules:
+      Paths_parallel_and_concurrent_programming_in_haskell
+  hs-source-dirs:
+      test
+  default-extensions:
+      TypeApplications
+      ImportQualifiedPost
+      NoStarIsType
+      LambdaCase
+      QuasiQuotes
+      OverloadedStrings
+      NoFieldSelectors
+      OverloadedRecordDot
+      DuplicateRecordFields
+      BlockArguments
+      PackageImports
+      PatternSynonyms
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , parallel-and-concurrent-programming-in-haskell
+  default-language: GHC2021
