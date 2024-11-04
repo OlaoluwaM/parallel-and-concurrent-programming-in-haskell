@@ -25,9 +25,16 @@ source-repository head
 
 library
   exposed-modules:
-      Concurrent.OverlappingIO.GetUrl
       Concurrent.OverlappingIO.GetUrls1
       Concurrent.OverlappingIO.GetUrls2
+      Concurrent.OverlappingIO.GetUrls3
+      Concurrent.OverlappingIO.GetUrls4
+      Concurrent.OverlappingIO.GetUrls5
+      Concurrent.OverlappingIO.GetUrls6
+      Concurrent.OverlappingIO.Helpers.Async
+      Concurrent.OverlappingIO.Helpers.Async2
+      Concurrent.OverlappingIO.Helpers.GetUrl
+      Concurrent.OverlappingIO.Helpers.TimeIt
       Concurrent.ThreadsAndMVars.Chan
       Concurrent.ThreadsAndMVars.Fork
       Concurrent.ThreadsAndMVars.Logger

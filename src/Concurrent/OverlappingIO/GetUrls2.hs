@@ -1,15 +1,15 @@
 module Concurrent.OverlappingIO.GetUrls2 where
 
-import Control.Concurrent
-import Control.Monad (void)
+import Concurrent.OverlappingIO.Helpers.GetUrl
+import Concurrent.OverlappingIO.Helpers.Async
+import Data.ByteString qualified as B
 
-newtype Async a = Async (MVar a)
+main :: IO ()
+main = do
+  ac1 <- async $ getUrl "http://www.wikipedia.org/wiki/Shovel"
+  ac2 <- async $ getUrl "http://www.wikipedia.org/wiki/Spade"
 
-async :: IO a -> IO (Async a)
-async ioAction = do
-    var <- newEmptyMVar
-    void $ forkIO $ ioAction >>= putMVar var
-    pure (Async var)
+  r1 <- wait ac1
+  r2 <- wait ac2
 
-wait :: Async a -> IO a
-wait (Async m) = readMVar m
+  print (B.length r1, B.length r2)

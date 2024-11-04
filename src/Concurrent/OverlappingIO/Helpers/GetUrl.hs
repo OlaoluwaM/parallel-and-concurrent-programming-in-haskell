@@ -2,7 +2,7 @@
 
 -- Simple wrapper around HTTP, allowing proxy use
 
-module Concurrent.OverlappingIO.GetUrl (getUrl) where
+module Concurrent.OverlappingIO.Helpers.GetUrl (getUrl) where
 
 import Control.Applicative -- for GHC < 7.10
 import Data.ByteString (ByteString)

@@ -1,6 +1,6 @@
 module Concurrent.OverlappingIO.GetUrls1 where
 
-import Concurrent.OverlappingIO.GetUrl
+import Concurrent.OverlappingIO.Helpers.GetUrl
 import Control.Concurrent
 import Control.Monad
 import Data.ByteString qualified as B
