@@ -31,16 +31,20 @@ library
       Concurrent.OverlappingIO.GetUrls4
       Concurrent.OverlappingIO.GetUrls5
       Concurrent.OverlappingIO.GetUrls6
+      Concurrent.OverlappingIO.GetUrlsCancel
       Concurrent.OverlappingIO.Helpers.Async
       Concurrent.OverlappingIO.Helpers.Async2
+      Concurrent.OverlappingIO.Helpers.Async3
       Concurrent.OverlappingIO.Helpers.GetUrl
       Concurrent.OverlappingIO.Helpers.TimeIt
+      Concurrent.OverlappingIO.MaskExample
       Concurrent.ThreadsAndMVars.Chan
       Concurrent.ThreadsAndMVars.Fork
       Concurrent.ThreadsAndMVars.Logger
       Concurrent.ThreadsAndMVars.MVar1
       Concurrent.ThreadsAndMVars.MVar2
       Concurrent.ThreadsAndMVars.MVar3
+      Concurrent.ThreadsAndMVars.MVar4
       Concurrent.ThreadsAndMVars.PhoneBook
       Concurrent.ThreadsAndMVars.Reminders
       Concurrent.ThreadsAndMVars.Reminders2
