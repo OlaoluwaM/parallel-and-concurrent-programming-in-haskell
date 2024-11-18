@@ -38,6 +38,10 @@ library
       Concurrent.OverlappingIO.Helpers.GetUrl
       Concurrent.OverlappingIO.Helpers.TimeIt
       Concurrent.OverlappingIO.MaskExample
+      Concurrent.STM.AsyncSTM
+      Concurrent.STM.Blocking
+      Concurrent.STM.BlockingRetry
+      Concurrent.STM.GetUrlsSTM
       Concurrent.ThreadsAndMVars.Chan
       Concurrent.ThreadsAndMVars.Fork
       Concurrent.ThreadsAndMVars.Logger
@@ -98,6 +102,7 @@ library
     , normaldistribution
     , parallel
     , random
+    , stm
     , text
     , time
     , vector

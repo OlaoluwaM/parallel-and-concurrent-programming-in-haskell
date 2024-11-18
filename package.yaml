@@ -65,6 +65,7 @@ library:
     - normaldistribution
     - containers
     - http-conduit
+    - stm
 
 executables:
   parallel-and-concurrent-programming-in-haskell-exe:
