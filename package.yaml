@@ -47,6 +47,8 @@ default-extensions:
   - BlockArguments
   - PackageImports
   - PatternSynonyms
+  - DerivingStrategies
+  - DerivingVia
 
 library:
   source-dirs: src
@@ -66,6 +68,7 @@ library:
     - containers
     - http-conduit
     - stm
+    - stm-delay
 
 executables:
   parallel-and-concurrent-programming-in-haskell-exe:

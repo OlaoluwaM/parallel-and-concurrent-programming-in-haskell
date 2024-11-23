@@ -39,9 +39,15 @@ library
       Concurrent.OverlappingIO.Helpers.TimeIt
       Concurrent.OverlappingIO.MaskExample
       Concurrent.STM.AsyncSTM
+      Concurrent.STM.BasicExample
       Concurrent.STM.Blocking
       Concurrent.STM.BlockingRetry
+      Concurrent.STM.Experiment
       Concurrent.STM.GetUrlsSTM
+      Concurrent.STM.TBQueue
+      Concurrent.STM.TChan
+      Concurrent.STM.TList
+      Concurrent.STM.TQueue
       Concurrent.ThreadsAndMVars.Chan
       Concurrent.ThreadsAndMVars.Fork
       Concurrent.ThreadsAndMVars.Logger
@@ -88,6 +94,8 @@ library
       BlockArguments
       PackageImports
       PatternSynonyms
+      DerivingStrategies
+      DerivingVia
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       array
@@ -103,6 +111,7 @@ library
     , parallel
     , random
     , stm
+    , stm-delay
     , text
     , time
     , vector
@@ -129,6 +138,8 @@ executable parallel-and-concurrent-programming-in-haskell-exe
       BlockArguments
       PackageImports
       PatternSynonyms
+      DerivingStrategies
+      DerivingVia
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
@@ -157,6 +168,8 @@ test-suite parallel-and-concurrent-programming-in-haskell-test
       BlockArguments
       PackageImports
       PatternSynonyms
+      DerivingStrategies
+      DerivingVia
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5

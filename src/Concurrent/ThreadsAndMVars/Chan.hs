@@ -55,6 +55,11 @@ dupChan (Chan _ writeEnd) = do
     newReadEnd <- newMVar hole
     pure $ Chan newReadEnd writeEnd
 
+{-
+    The exact semantics of this operation are a bit difficult to get right with an MVar implementation of a channel because such an operation might introduce deadlocks (contrary to the expectation) if, say, the channel is empty and a there has already been an attempt to read from the channel.
+
+    Ideally, there shouldn't be a problem with this kind of access pattern in this scenario, the `readChan` should block while the `unGetChan` seeds the channel with some (previously read) value that the `readChan` operation can then receive. However, due to the semantics of MVars, this is not the case; both operations block indefinitely. The `readChan` operation blocks because the readEnd of an empty channel yields an empty MVar, while the `unGetChan` operation blocks because the `readChan` operation would have acquired a lock on the `readEnd` MVar preventing the `unGetChan` operation from accessing it and carrying on
+-}
 unGetChan :: Chan a -> a -> IO ()
 unGetChan (Chan readEnd _) a = do
     newHole <- newEmptyMVar
@@ -67,6 +72,14 @@ unGetChan (Chan readEnd _) a = do
 -- If multiple concurrent threads call `readChan` the first one will work as expected but the other will all block until the first call to `readChan` has been completed and the read end updated (to point to the new tail). Similarly, if multiple threads were to call `writeChan` the first call to `writeChan` will work as expected while all the others will be blocked until the first call to `writeChan` has completed and the write end has been updated to point to the new hole
 
 -- Nevertheless, because the read and write ends are separate MVars, a `readChan` and a `writeChan` operation can occur concurrently (without interference, while a `readChan` operation is occurring, a `writeChan` operation can also progress) assuming the channel isn't empty
+
+-- The reason an operation like this isn't possible with an MVar representation of a channel is because of the fact that using `takeMVar` on an empty channel will lead to blocking, while what we truly want to do return a value. An `isEmptyChan` operation would always block if a channel is empty (kinda ironic), but won't block if a channel is not empty, and thus would always return false making such an operation in this particular implementation style effectively useless
+
+-- Also, MVars have only the implicit notion of emptiness. They have no explicit notion of emptiness that can be checked against
+isEmptyChan :: Chan a -> IO Bool
+isEmptyChan (Chan readEnd _) = do
+    readHole <- takeMVar readEnd >>= takeMVar
+    undefined
 
 program1 :: IO ()
 program1 = do
