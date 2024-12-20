@@ -1,9 +1,9 @@
 module Concurrent.STM.AsyncSTM where
 
 import Concurrent.STM.Blocking (TMVar, newEmptyTMVarIO, putTMVar, readTMVar)
-import Control.Concurrent (ThreadId, forkFinally)
+import Control.Concurrent (ThreadId, forkFinally, throwTo)
 import Control.Concurrent.STM (STM, atomically, orElse, throwSTM, retry)
-import Control.Exception (SomeException)
+import Control.Exception (SomeException, AsyncException (ThreadKilled))
 
 data Async a = Async ThreadId (TMVar (Either SomeException a))
 
@@ -27,4 +27,5 @@ waitEither a b = atomically $ (Left <$> waitSTM a) `orElse` (Right <$> waitSTM b
 waitAny :: [Async a] -> IO a
 waitAny = atomically . foldr (orElse . waitSTM) retry
 
-
+cancel :: Async a -> IO ()
+cancel (Async t _) = throwTo t ThreadKilled

@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Concurrent.HigherLevelConcPrimitives.Async
       Concurrent.OverlappingIO.GetUrls1
       Concurrent.OverlappingIO.GetUrls2
       Concurrent.OverlappingIO.GetUrls3
@@ -47,6 +48,7 @@ library
       Concurrent.STM.TBQueue
       Concurrent.STM.TChan
       Concurrent.STM.TList
+      Concurrent.STM.TooManyBlocking
       Concurrent.STM.TQueue
       Concurrent.ThreadsAndMVars.Chan
       Concurrent.ThreadsAndMVars.Fork
