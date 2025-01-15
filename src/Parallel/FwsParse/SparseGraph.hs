@@ -1,4 +1,4 @@
-module FwsParse.SparseGraph (
+module Parallel.FwsParse.SparseGraph (
     Vertex,
     Weight,
     Graph,

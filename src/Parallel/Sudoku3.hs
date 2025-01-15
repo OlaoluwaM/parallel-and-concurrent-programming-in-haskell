@@ -1,9 +1,9 @@
-module Sudoku3 where
+module Parallel.Sudoku3 where
 
 import Control.Exception (evaluate)
 import Control.Parallel.Strategies
 import Data.Maybe (catMaybes)
-import Sudoku
+import Parallel.Sudoku
 import System.Environment
 import Control.DeepSeq (force)
 

@@ -1,4 +1,4 @@
-module ParMonad where
+module Parallel.ParMonad where
 
 import Control.Exception
 import System.Environment

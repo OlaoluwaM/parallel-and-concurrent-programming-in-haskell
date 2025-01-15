@@ -1,6 +1,6 @@
-module KMeans.GenSamples where
+module Parallel.KMeans.GenSamples where
 
-import KMeans.Core
+import Parallel.KMeans.Core
 import Data.Random.Normal
 import System.Random
 import System.IO

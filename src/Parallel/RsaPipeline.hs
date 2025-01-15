@@ -4,7 +4,7 @@
 -- public domain.
 --
 
-module RsaPipeline where
+module Parallel.RsaPipeline where
 
 import Control.Monad.Par.Scheds.Trace
 import Data.ByteString.Lazy.Char8 (ByteString)
@@ -12,7 +12,7 @@ import Data.ByteString.Lazy.Char8 qualified as B
 import Data.List
 import System.Environment
 
-import Stream
+import Parallel.Stream
 
 main = do
     [f] <- getArgs

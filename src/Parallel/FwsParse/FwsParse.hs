@@ -1,11 +1,11 @@
 {-# OPTIONS_GHC -Wall -fno-warn-name-shadowing #-}
 
-module FwsParse.FwsParse (main, runtest) where
+module Parallel.FwsParse.FwsParse (main, runtest) where
 
 import Data.IntMap.Strict (IntMap)
 import Data.IntMap.Strict qualified as Map
 import Data.List qualified as L
-import FwsParse.SparseGraph
+import Parallel.FwsParse.SparseGraph
 import System.Environment
 import System.Random
 

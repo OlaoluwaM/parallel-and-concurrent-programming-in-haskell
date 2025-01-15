@@ -4,7 +4,7 @@
 --
 
 {-# LANGUAGE DeriveDataTypeable #-}
-module KMeans.Core where
+module Parallel.KMeans.Core where
 
 import Data.List
 import Data.Typeable (Typeable)

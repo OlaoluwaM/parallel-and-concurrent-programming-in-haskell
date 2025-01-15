@@ -26,7 +26,7 @@
 -- Usage (divide-and-conquer / Eval monad):
 --   $ ./kmeans diveval 7 +RTS -N4
 
-module KMeans.KMeans where
+module Parallel.KMeans.KMeans where
 
 import Control.Concurrent
 import Control.DeepSeq
@@ -43,7 +43,7 @@ import Data.List
 import Data.Maybe
 import Data.Time.Clock
 import Debug.Trace
-import KMeans.Core
+import Parallel.KMeans.Core
 import System.Environment
 import System.IO
 import System.Mem

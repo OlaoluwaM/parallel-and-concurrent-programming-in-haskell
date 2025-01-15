@@ -69,6 +69,10 @@ library:
     - http-conduit
     - stm
     - stm-delay
+    - network
+    - network-uri
+    - network-run
+    - async
 
 executables:
   parallel-and-concurrent-programming-in-haskell-exe:

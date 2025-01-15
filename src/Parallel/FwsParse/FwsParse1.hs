@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-name-shadowing #-}
 
-module FwsParse.FwsParse1 (main, runtest) where
+module Parallel.FwsParse.FwsParse1 (main, runtest) where
 
 import Control.Monad.Par.Scheds.Trace
 
@@ -13,7 +13,7 @@ import System.Environment
 import System.Random
 
 import Data.Foldable
-import FwsParse.SparseGraph
+import Parallel.FwsParse.SparseGraph
 
 -- -----------------------------------------------------------------------------
 -- shortestPaths

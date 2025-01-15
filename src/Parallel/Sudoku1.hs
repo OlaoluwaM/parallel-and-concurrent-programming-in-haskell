@@ -1,7 +1,7 @@
-module Sudoku1 where
+module Parallel.Sudoku1 where
 
 import Data.Maybe
-import Sudoku
+import Parallel.Sudoku
 import System.Environment
 
 main :: IO ()

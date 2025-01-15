@@ -1,9 +1,9 @@
-module Sudoku2 where
+module Parallel.Sudoku2 where
 
 import Control.DeepSeq (force)
 import Control.Parallel.Strategies
 import Data.Maybe
-import Sudoku
+import Parallel.Sudoku
 import System.Environment
 
 main :: IO ()

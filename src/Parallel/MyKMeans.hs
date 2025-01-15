@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use camelCase" #-}
-module MyKMeans where
+module Parallel.MyKMeans where
 
 import Control.Arrow ((&&&))
 import Data.Function (on)

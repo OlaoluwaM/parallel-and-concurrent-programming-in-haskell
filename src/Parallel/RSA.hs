@@ -4,7 +4,7 @@
 -- public domain.
 --
 
-module RSA where
+module Parallel.RSA where
 
 import Control.Parallel.Strategies (parBuffer, parList, rdeepseq, withStrategy)
 import Data.ByteString.Lazy.Char8 (ByteString)

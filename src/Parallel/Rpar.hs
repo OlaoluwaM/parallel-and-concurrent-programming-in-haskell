@@ -1,4 +1,4 @@
-module Rpar where
+module Parallel.Rpar where
 
 import Control.Parallel
 import Control.Parallel.Strategies

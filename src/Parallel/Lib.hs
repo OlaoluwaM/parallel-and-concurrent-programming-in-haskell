@@ -1,4 +1,4 @@
-module Lib
+module Parallel.Lib
     ( someFunc
     ) where
 

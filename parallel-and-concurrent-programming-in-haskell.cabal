@@ -26,6 +26,8 @@ source-repository head
 library
   exposed-modules:
       Concurrent.HigherLevelConcPrimitives.Async
+      Concurrent.NetworkServers.STM
+      Concurrent.NetworkServers.Trivial
       Concurrent.OverlappingIO.GetUrls1
       Concurrent.OverlappingIO.GetUrls2
       Concurrent.OverlappingIO.GetUrls3
@@ -60,23 +62,23 @@ library
       Concurrent.ThreadsAndMVars.PhoneBook
       Concurrent.ThreadsAndMVars.Reminders
       Concurrent.ThreadsAndMVars.Reminders2
-      FwsParse.FwsParse
-      FwsParse.FwsParse1
-      FwsParse.SparseGraph
-      KMeans.Core
-      KMeans.GenSamples
-      KMeans.KMeans
-      Lib
-      MyKMeans
-      ParMonad
-      Rpar
-      RSA
-      RsaPipeline
-      Stream
-      Sudoku
-      Sudoku1
-      Sudoku2
-      Sudoku3
+      Parallel.FwsParse.FwsParse
+      Parallel.FwsParse.FwsParse1
+      Parallel.FwsParse.SparseGraph
+      Parallel.KMeans.Core
+      Parallel.KMeans.GenSamples
+      Parallel.KMeans.KMeans
+      Parallel.Lib
+      Parallel.MyKMeans
+      Parallel.ParMonad
+      Parallel.Rpar
+      Parallel.RSA
+      Parallel.RsaPipeline
+      Parallel.Stream
+      Parallel.Sudoku
+      Parallel.Sudoku1
+      Parallel.Sudoku2
+      Parallel.Sudoku3
   other-modules:
       Paths_parallel_and_concurrent_programming_in_haskell
   autogen-modules:
@@ -101,6 +103,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       array
+    , async
     , base >=4.7 && <5
     , binary
     , bytestring
@@ -109,6 +112,9 @@ library
     , extra
     , http-conduit
     , monad-par
+    , network
+    , network-run
+    , network-uri
     , normaldistribution
     , parallel
     , random

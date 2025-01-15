@@ -8,7 +8,7 @@
 -- (In the future may want to look into the stream interface used by
 --  the stream fusion framework.)
 
-module Stream (
+module Parallel.Stream (
     Stream,
     streamFromList,
     streamMap,

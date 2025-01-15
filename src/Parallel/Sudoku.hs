@@ -24,7 +24,7 @@
 
 -- Gotten from https://github.com/simonmar/parconc-examples/blob/master/Sudoku.hs
 
-module Sudoku (solve, printGrid) where
+module Parallel.Sudoku (solve, printGrid) where
 
 import Control.Monad
 import Data.Array
