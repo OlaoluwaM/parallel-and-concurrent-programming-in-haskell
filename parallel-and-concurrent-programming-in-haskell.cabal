@@ -62,6 +62,12 @@ library
       Concurrent.ThreadsAndMVars.PhoneBook
       Concurrent.ThreadsAndMVars.Reminders
       Concurrent.ThreadsAndMVars.Reminders2
+      Parallel.ConferenceTimetable
+      Parallel.FileSearch.FindFileNBSem
+      Parallel.FileSearch.FindFilePar
+      Parallel.FileSearch.FindFileParIO
+      Parallel.FileSearch.FindFileParIORef
+      Parallel.FileSearch.FindFileSeq
       Parallel.FwsParse.FwsParse
       Parallel.FwsParse.FwsParse1
       Parallel.FwsParse.SparseGraph
@@ -79,6 +85,7 @@ library
       Parallel.Sudoku1
       Parallel.Sudoku2
       Parallel.Sudoku3
+      Parallel.Timetable
   other-modules:
       Paths_parallel_and_concurrent_programming_in_haskell
   autogen-modules:
@@ -100,16 +107,20 @@ library
       PatternSynonyms
       DerivingStrategies
       DerivingVia
+      DeriveAnyClass
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      array
+      abstract-par
+    , array
     , async
     , base >=4.7 && <5
     , binary
     , bytestring
     , containers
     , deepseq
+    , directory
     , extra
+    , filepath
     , http-conduit
     , monad-par
     , network
@@ -148,6 +159,7 @@ executable parallel-and-concurrent-programming-in-haskell-exe
       PatternSynonyms
       DerivingStrategies
       DerivingVia
+      DeriveAnyClass
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
@@ -178,6 +190,7 @@ test-suite parallel-and-concurrent-programming-in-haskell-test
       PatternSynonyms
       DerivingStrategies
       DerivingVia
+      DeriveAnyClass
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5

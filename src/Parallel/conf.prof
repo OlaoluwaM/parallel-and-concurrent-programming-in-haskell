@@ -1,0 +1,29 @@
+	Fri Jan 17 12:20 2025 Time and Allocation Profiling Report  (Final)
+
+	   conf +RTS -p -RTS
+
+	total time  =        0.00 secs   (2 ticks @ 1000 us, 1 processor)
+	total alloc =      68,360 bytes  (excludes profiling overheads)
+
+COST CENTRE MODULE                       SRC                                    %time %alloc
+
+MAIN        MAIN                         <built-in>                              50.0   28.3
+CAF         GHC.Event.Poll               <entire-module>                         50.0    0.1
+main        Parallel.ConferenceTimetable ConferenceTimetable.hs:(53,1)-(56,16)    0.0   15.2
+CAF         GHC.IO.Handle.FD             <entire-module>                          0.0   50.8
+CAF         GHC.IO.Encoding              <entire-module>                          0.0    3.6
+
+
+                                                                                                   individual      inherited
+COST CENTRE  MODULE                       SRC                                   no.     entries  %time %alloc   %time %alloc
+
+MAIN         MAIN                         <built-in>                            135           0   50.0   28.3   100.0  100.0
+ CAF         GHC.Conc.Signal              <entire-module>                       245           0    0.0    0.9     0.0    0.9
+ CAF         GHC.Event.Poll               <entire-module>                       230           0   50.0    0.1    50.0    0.1
+ CAF         GHC.Event.Thread             <entire-module>                       229           0    0.0    0.7     0.0    0.7
+ CAF         GHC.IO.Encoding              <entire-module>                       210           0    0.0    3.6     0.0    3.6
+ CAF         GHC.IO.Encoding.Iconv        <entire-module>                       208           0    0.0    0.3     0.0    0.3
+ CAF         GHC.IO.Handle.FD             <entire-module>                       199           0    0.0   50.8     0.0   50.8
+ CAF         Parallel.ConferenceTimetable <entire-module>                       142           0    0.0    0.0     0.0    0.7
+  main       Parallel.ConferenceTimetable ConferenceTimetable.hs:(53,1)-(56,16) 270           1    0.0    0.7     0.0    0.7
+ main        Parallel.ConferenceTimetable ConferenceTimetable.hs:(53,1)-(56,16) 271           0    0.0   14.5     0.0   14.5

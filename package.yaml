@@ -49,6 +49,7 @@ default-extensions:
   - PatternSynonyms
   - DerivingStrategies
   - DerivingVia
+  - DeriveAnyClass
 
 library:
   source-dirs: src
@@ -73,6 +74,10 @@ library:
     - network-uri
     - network-run
     - async
+    - random
+    - directory
+    - filepath
+    - abstract-par
 
 executables:
   parallel-and-concurrent-programming-in-haskell-exe:
