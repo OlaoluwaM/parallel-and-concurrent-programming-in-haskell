@@ -25,6 +25,10 @@ source-repository head
 
 library
   exposed-modules:
+      Concurrent.Debugging.Deadlock1
+      Concurrent.Debugging.Deadlock2
+      Concurrent.Debugging.MVar4
+      Concurrent.Debugging.ThreadPerf1
       Concurrent.HigherLevelConcPrimitives.Async
       Concurrent.NetworkServers.STM
       Concurrent.NetworkServers.Trivial
