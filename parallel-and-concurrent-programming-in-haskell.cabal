@@ -29,7 +29,10 @@ library
       Concurrent.Debugging.Deadlock2
       Concurrent.Debugging.MVar4
       Concurrent.Debugging.ThreadPerf1
+      Concurrent.Debugging.ThreadPerf2
       Concurrent.HigherLevelConcPrimitives.Async
+      Concurrent.NetworkServers.ChatServer
+      Concurrent.NetworkServers.StateServer
       Concurrent.NetworkServers.STM
       Concurrent.NetworkServers.Trivial
       Concurrent.OverlappingIO.GetUrls1
@@ -38,7 +41,9 @@ library
       Concurrent.OverlappingIO.GetUrls4
       Concurrent.OverlappingIO.GetUrls5
       Concurrent.OverlappingIO.GetUrls6
+      Concurrent.OverlappingIO.GetUrls7
       Concurrent.OverlappingIO.GetUrlsCancel
+      Concurrent.OverlappingIO.GetUrlsChan
       Concurrent.OverlappingIO.Helpers.Async
       Concurrent.OverlappingIO.Helpers.Async2
       Concurrent.OverlappingIO.Helpers.Async3
@@ -97,26 +102,32 @@ library
   hs-source-dirs:
       src
   default-extensions:
-      TypeApplications
-      ImportQualifiedPost
-      NoStarIsType
-      LambdaCase
-      QuasiQuotes
-      OverloadedStrings
-      NoFieldSelectors
-      OverloadedRecordDot
-      DuplicateRecordFields
+      ApplicativeDo
       BlockArguments
-      PackageImports
-      PatternSynonyms
+      DeriveAnyClass
       DerivingStrategies
       DerivingVia
-      DeriveAnyClass
+      DuplicateRecordFields
+      GADTs
+      ImportQualifiedPost
+      LambdaCase
+      NamedFieldPuns
+      NoFieldSelectors
+      NoStarIsType
+      OverloadedRecordDot
+      OverloadedStrings
+      PackageImports
+      PatternSynonyms
+      QuasiQuotes
+      RecordWildCards
+      StrictData
+      TypeApplications
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       abstract-par
     , array
     , async
+    , attoparsec
     , base >=4.7 && <5
     , binary
     , bytestring
@@ -125,7 +136,9 @@ library
     , directory
     , extra
     , filepath
+    , hashable
     , http-conduit
+    , lens
     , monad-par
     , network
     , network-run
@@ -135,8 +148,10 @@ library
     , random
     , stm
     , stm-delay
+    , string-interpolate
     , text
     , time
+    , unordered-containers
     , vector
   default-language: GHC2021
 
@@ -149,21 +164,26 @@ executable parallel-and-concurrent-programming-in-haskell-exe
   hs-source-dirs:
       app
   default-extensions:
-      TypeApplications
-      ImportQualifiedPost
-      NoStarIsType
-      LambdaCase
-      QuasiQuotes
-      OverloadedStrings
-      NoFieldSelectors
-      OverloadedRecordDot
-      DuplicateRecordFields
+      ApplicativeDo
       BlockArguments
-      PackageImports
-      PatternSynonyms
+      DeriveAnyClass
       DerivingStrategies
       DerivingVia
-      DeriveAnyClass
+      DuplicateRecordFields
+      GADTs
+      ImportQualifiedPost
+      LambdaCase
+      NamedFieldPuns
+      NoFieldSelectors
+      NoStarIsType
+      OverloadedRecordDot
+      OverloadedStrings
+      PackageImports
+      PatternSynonyms
+      QuasiQuotes
+      RecordWildCards
+      StrictData
+      TypeApplications
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
@@ -180,21 +200,26 @@ test-suite parallel-and-concurrent-programming-in-haskell-test
   hs-source-dirs:
       test
   default-extensions:
-      TypeApplications
-      ImportQualifiedPost
-      NoStarIsType
-      LambdaCase
-      QuasiQuotes
-      OverloadedStrings
-      NoFieldSelectors
-      OverloadedRecordDot
-      DuplicateRecordFields
+      ApplicativeDo
       BlockArguments
-      PackageImports
-      PatternSynonyms
+      DeriveAnyClass
       DerivingStrategies
       DerivingVia
-      DeriveAnyClass
+      DuplicateRecordFields
+      GADTs
+      ImportQualifiedPost
+      LambdaCase
+      NamedFieldPuns
+      NoFieldSelectors
+      NoStarIsType
+      OverloadedRecordDot
+      OverloadedStrings
+      PackageImports
+      PatternSynonyms
+      QuasiQuotes
+      RecordWildCards
+      StrictData
+      TypeApplications
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5

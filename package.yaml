@@ -35,49 +35,58 @@ ghc-options:
   - -Wredundant-constraints
 
 default-extensions:
-  - TypeApplications
-  - ImportQualifiedPost
-  - NoStarIsType
-  - LambdaCase
-  - QuasiQuotes
-  - OverloadedStrings
-  - NoFieldSelectors
-  - OverloadedRecordDot
-  - DuplicateRecordFields
+  - ApplicativeDo
   - BlockArguments
-  - PackageImports
-  - PatternSynonyms
+  - DeriveAnyClass
   - DerivingStrategies
   - DerivingVia
-  - DeriveAnyClass
+  - DuplicateRecordFields
+  - GADTs
+  - ImportQualifiedPost
+  - LambdaCase
+  - NamedFieldPuns
+  - NoFieldSelectors
+  - NoStarIsType
+  - OverloadedRecordDot
+  - OverloadedStrings
+  - PackageImports
+  - PatternSynonyms
+  - QuasiQuotes
+  - RecordWildCards
+  - StrictData
+  - TypeApplications
 
 library:
   source-dirs: src
   dependencies:
-    - parallel
-    - text
-    - time
-    - extra
+    - abstract-par
     - array
-    - deepseq
-    - vector
-    - monad-par
-    - bytestring
+    - async
+    - attoparsec
     - binary
-    - random
-    - normaldistribution
+    - bytestring
     - containers
+    - deepseq
+    - directory
+    - extra
+    - filepath
+    - hashable
     - http-conduit
+    - lens
+    - monad-par
+    - network
+    - network-run
+    - network-uri
+    - normaldistribution
+    - parallel
+    - random
     - stm
     - stm-delay
-    - network
-    - network-uri
-    - network-run
-    - async
-    - random
-    - directory
-    - filepath
-    - abstract-par
+    - string-interpolate
+    - text
+    - time
+    - unordered-containers
+    - vector
 
 executables:
   parallel-and-concurrent-programming-in-haskell-exe:

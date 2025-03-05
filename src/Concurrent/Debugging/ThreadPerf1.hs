@@ -3,6 +3,7 @@ module Concurrent.Debugging.ThreadPerf1 where
 import Control.Concurrent (forkIO, newEmptyMVar, putMVar, takeMVar)
 import Control.Monad (replicateM_)
 
+numThreads :: Int
 numThreads = 1000000
 
 main :: IO ()
