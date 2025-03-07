@@ -9,63 +9,77 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE StrictData #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE NoFieldSelectors #-}
 
 module Concurrent.NetworkServers.ChatServer where
 
+import Control.Applicative (Alternative ((<|>)))
 import Control.Concurrent.Async (race)
-import Control.Concurrent.STM (STM, TChan, TVar, atomically, cloneTChan, modifyTVar, newTChan, newTChanIO, newTVarIO, orElse, readTChan, readTVar, writeTChan)
-import Control.Exception (bracket, getMaskingState, onException)
-import Control.Lens (over)
-import Control.Lens.TH
-import Control.Monad (forever, unless, void)
+import Control.Concurrent.STM (
+    STM,
+    TChan,
+    TVar,
+    atomically,
+    dupTChan,
+    modifyTVar,
+    newTChanIO,
+    newTVar,
+    newTVarIO,
+    readTChan,
+    readTVar,
+    readTVarIO,
+    writeTChan,
+    writeTVar,
+ )
+import Control.Exception (bracket)
+import Control.Monad (forever, join, void)
+import Data.Attoparsec.ByteString qualified as A
+import Data.Attoparsec.ByteString.Char8 qualified as AC
+import Data.ByteString (ByteString)
 import Data.ByteString.Char8 qualified as BC
 import Data.Char (isSpace)
-import Data.Either.Extra (fromEither)
+import Data.Either (fromRight)
+import Data.Functor (($>))
 import Data.HashMap.Strict (HashMap)
 import Data.HashMap.Strict qualified as HashMap
 import Data.Hashable (Hashable (..))
-import Data.String (IsString (..))
 import Data.String.Interpolate (i)
 import Data.Text (Text)
 import Data.Text qualified as T
-import Data.Text.Encoding (decodeUtf8Lenient)
 import Data.Text.Encoding qualified as T
-import Debug.Trace
+import Data.Text.IO qualified as T
+import Data.Time (UTCTime, getCurrentTime)
 import Network.Run.TCP (runTCPServer)
 import Network.Socket (Socket)
 import Network.Socket.ByteString (recv, sendAll)
 
-newtype Username = Username {username :: Text}
-    deriving newtype (Show, Eq, Hashable)
+{-
+    Having the type be `TVar Channel` here seems to only be useful when you have multiple channels. This would make it such that, as long as there are no structural changes to the `HashMap` itself (inserts or deletes), threads speaking to one channel won't be affected by changes to another. However, since right now we only have one channel, all threads will be speaking/accessing to one channel making `TVar (HashMap k (TVar Channel)) the same in terms of performance to `TVar (HashMa k v)` with more indirection
+-}
+newtype ChatServerState = ChatServerState {channels :: HashMap ChannelName Channel}
 
-data User = User {name :: Username, dmChan :: TChan String, channelChan :: TChan String}
+data Channel = Channel
+    { title :: ChannelName
+    , members :: TVar (HashMap Username User)
+    , broadcastChan :: ChannelBroadcastChan
+    }
 
 newtype ChannelName = ChannelName {channelName :: Text}
     deriving newtype (Hashable, Eq, Show)
 
-type ChannelMembership = HashMap Username User
+type ChannelBroadcastChan = TChan Text
 
-data Channel = Channel
-    { title :: ChannelName
-    , {-
-          `TVar (HashMap Text (TVar User))` isn't particularly useful here since structural changes to the HashMap will be common and cause performance to be similar to a TVar (HashMap Text User) representation since all threads that seek to modify `TVar User` would need to read `TVar HashMap` first. So when a new user joins the chat, that will affect the activity of all existing users
+data User = User {name :: Username, socket :: Socket, channelChan :: ChannelBroadcastChan, kickStatus :: TVar KickedStatus}
 
-          Actually, this doesn't *have* to even be wrapped in a `TVar` or `IORef`
-      -}
-      members :: ChannelMembership
-    , broadcastChan :: TChan String
-    }
+newtype Username = Username {username :: Text}
+    deriving newtype (Show, Eq, Hashable)
 
-{-
-    Having the type be `TVar Channel` here seems to only be useful when you have multiple channels. This would make it such that, as long as there are no structural changes to the `HashMap` itself (inserts or deletes), threads speaking to one channel won't be affected by changes to another. However, since right now we only have one channel, all threads will be speaking/accessing this channel thus making `TVar (HashMap k (TVar Channel)) the same in terms of performance to `TVar (HashMa k v)` with more indirection
--}
-type ChannelRegistry = HashMap ChannelName Channel
-newtype ChatServerState = ChatServerState {channels :: TVar ChannelRegistry}
+data KickedStatus = Kicked KickDetails | NotKicked
 
-$(makeLensesFor [("title", "titleL"), ("members", "membersL"), ("broadcastChan", "broadcastChanL")] ''Channel)
-$(makeLensesFor [("channels", "channelsL")] ''ChatServerState)
+data KickDetails = KickDetails {by :: Username, at :: UTCTime}
+
+data ClientCommand = DM Username Text | ChannelBroadcast Text | Quit | Kick Username | Help | HelpInvalid | Stats
+    deriving stock (Show, Eq)
 
 defaultChannelName :: ChannelName
 defaultChannelName = ChannelName "default-channel"
@@ -76,56 +90,56 @@ serviceName = "haskell-irc"
 main :: IO ()
 main = do
     broadcastChan <- newTChanIO
+    defaultChannelMembers <- newTVarIO HashMap.empty
 
-    let defaultChannelMembers = HashMap.empty
     let defaultChannel = Channel{title = defaultChannelName, members = defaultChannelMembers, broadcastChan}
+    -- Channels are immutable since we aren't supporting the ability for users to create new channels or get rid of channels
+    let chatServerState = ChatServerState{channels = HashMap.singleton defaultChannelName defaultChannel}
 
-    channels <- newTVarIO (HashMap.singleton defaultChannelName defaultChannel)
+    {-
+        We don't exactly need to do these two actions as a race, but because we want the relationship semantics to be akin to siblings
+        such that if one should exit the other does too, race seems appropriate. `concurrently` is also an option too
+    -}
+    void $ race (broadcastInServer broadcastChan) (runTCPServer Nothing "4728" (handleClientConnection chatServerState))
+  where
+    broadcastInServer :: TChan Text -> IO ()
+    broadcastInServer broadcastTChan = forever $ atomically (readTChan broadcastTChan) >>= T.putStrLn
 
-    let serverState = ChatServerState channels
+handleClientConnection :: ChatServerState -> Socket -> IO ()
+handleClientConnection serverState socket = do
+    bracket (registerUser serverState socket) (unRegisterUser serverState) (handleSession serverState)
 
-    runTCPServer Nothing "4728" (handleConnection serverState)
-
-broadcastInServer :: TChan String -> IO ()
-broadcastInServer broadcastTChan = forever $ atomically (readTChan broadcastTChan) >>= putStr
-
-handleConnection :: ChatServerState -> Socket -> IO ()
-handleConnection serverStateRef s = do
-    -- bracket (registerUser s serverStateRef) (\u -> putStrLn "aa" >> unRegisterUser serverStateRef u) (handleSession s serverStateRef)
-    bracket (registerUser s serverStateRef) (unRegisterUser serverStateRef) (const (handleSession s serverStateRef))
-
-registerUser :: Socket -> ChatServerState -> IO User
-registerUser s chatServerStateVar = do
-    sendAll s [i|Welcome to the #{serviceName}! Enter what you'd like to be called in the chat: |]
+registerUser :: ChatServerState -> Socket -> IO User
+registerUser chatServerState socket = do
+    sendAll socket [i|Welcome to the #{serviceName}! Enter what you'd like to be called in the chat: |]
     loop
   where
     loop :: IO User
     loop = do
-        rawUserResp <- recv s 1024
-        let parsedUserResp = tstrip . decodeUtf8Lenient $ rawUserResp
+        rawUserInput <- recv socket 1024
+        let parsedUserInput = T.strip . T.decodeUtf8Lenient $ rawUserInput
+        let defaultChannel = getDefaultChannel chatServerState
 
-        (defaultChannel, membersList) <- atomically do
-            defaultChannel <- getDefaultChannel chatServerStateVar
-            pure (defaultChannel, HashMap.keys defaultChannel.members)
+        membersList <- atomically do
+            channelMembershipRegistry <- readTVar defaultChannel.members
+            pure $ HashMap.keys channelMembershipRegistry
 
-        case isInvalidUsername membersList parsedUserResp of
+        case isInvalidUsername membersList parsedUserInput of
             (Left errMsg) -> do
-                sendAll s (T.encodeUtf8 errMsg)
+                sendAll socket (T.encodeUtf8 errMsg)
                 loop
             (Right _) -> do
-                v <- atomically $ do
-                    newDmChan <- newTChan
-                    userBroadcastChannelChan <- cloneTChan defaultChannel.broadcastChan
+                let chosenUsername = Username parsedUserInput
+                atomically $ do
+                    userBroadcastChannelChan <- dupTChan defaultChannel.broadcastChan
+                    kickStatus <- newTVar NotKicked
 
-                    let newUserName = Username parsedUserResp
-                    let newUser = User{name = newUserName, dmChan = newDmChan, channelChan = userBroadcastChannelChan}
+                    let newUser = User{name = chosenUsername, socket = socket, channelChan = userBroadcastChannelChan, kickStatus}
 
-                    modifyTVar chatServerStateVar.channels (updateDefaultChannelMembers (HashMap.insert newUserName newUser))
-                    writeTChan defaultChannel.broadcastChan [i|#{newUserName} just joined, welcome!\n|]
+                    modifyTVar defaultChannel.members (HashMap.insert chosenUsername newUser)
+                    writeTChan defaultChannel.broadcastChan [i|[Info] #{chosenUsername} just joined, welcome!|]
 
                     pure newUser
-                putStrLn "Done"
-                pure v
 
 isInvalidUsername :: [Username] -> Text -> Either Text ()
 isInvalidUsername memberList potentialUserName = do
@@ -137,63 +151,163 @@ isInvalidUsername memberList potentialUserName = do
     toEitherBool e bool = if bool then Left e else Right ()
 
 unRegisterUser :: ChatServerState -> User -> IO ()
-unRegisterUser chatServerStateVar (User username _ _) = do
-    putStrLn "Running unregistration"
+unRegisterUser chatServerState (User username _ _ _) = do
+    let defaultChannel = getDefaultChannel chatServerState
     atomically $ do
-        modifyTVar chatServerStateVar.channels (updateDefaultChannelMembers (HashMap.delete username))
-        -- traceM (prettyChan chan)
-        defaultChannel <- getDefaultChannel chatServerStateVar
-        writeTChan defaultChannel.broadcastChan [i|#{username} quit the channel\n|]
+        modifyTVar defaultChannel.members (HashMap.delete username)
+        writeTChan defaultChannel.broadcastChan [i|[Info] #{username} quit the channel|]
 
--- Alternatively we could have three threads per client, one for receiving client input, another for receiving client notification requests via the chans, and a third for handling all those inputs and requests
--- handleSession :: Socket -> ChatServerState -> User -> IO ()
-handleSession s serverStateRef user = do
-    -- putStrLn "handle Session"
+handleSession :: ChatServerState -> User -> IO ()
+handleSession chatServerState user = do
     -- One thread for dealing with client input
     -- another for client notification
-    -- interThreadChan <- newTChanIO
-    void $ race (handleClientNotif s user) ()
+    let defaultChannel = getDefaultChannel chatServerState
+    void $ race (handleClientNotif user) (handleClientInput defaultChannel user)
 
+handleClientNotif :: User -> IO ()
+handleClientNotif user = forever $ do
+    channelBroadcastMsg <- atomically $ readTChan user.channelChan
+    sendAllLn user.socket (T.encodeUtf8 channelBroadcastMsg)
 
-handleClientNotif :: Socket -> User -> IO ()
-handleClientNotif s user = forever $ do
-    v <- atomically $ (Left <$> readTChan user.channelChan) `orElse` (Right <$> readTChan user.dmChan)
-    sendAll s (fromString . fromEither $ v)
+handleClientInput :: Channel -> User -> IO ()
+handleClientInput defaultChannel user = do
+    let clientSocket = user.socket
+    rawCmd <- recv clientSocket 1024
+    let parsedCmd = parseCmdFromInput rawCmd
+    case parsedCmd of
+        Quit -> quitServer user
+        DM recipientUsername rawMsg -> validateKickStatus user (dmUser defaultChannel user recipientUsername rawMsg) >> handleClientInput defaultChannel user
+        ChannelBroadcast msg -> validateKickStatus user (sendMsgToChannel user msg) >> handleClientInput defaultChannel user
+        Kick victimUsername -> validateKickStatus user (kickUser defaultChannel user victimUsername) >> handleClientInput defaultChannel user
+        Help -> showHelpMessage clientSocket >> handleClientInput defaultChannel user
+        HelpInvalid -> sendAllLn clientSocket "[Info] Invalid command" >> showHelpMessage clientSocket >> handleClientInput defaultChannel user
+        Stats -> displayChannelStats clientSocket defaultChannel >> handleClientInput defaultChannel user
 
--- handleSession :: Socket -> ChatServerState -> IO ()
--- handleSession s c = forever $ flip onException (pure ()) $ do
---     msg <- recv s 1024
---     unless (BC.null msg) $ do
---         print "handle input"
---         sendAll s msg
+parseCmdFromInput :: ByteString -> ClientCommand
+parseCmdFromInput clientInput
+    | BC.null clientInput = Quit
+    | otherwise = fromRight HelpInvalid . AC.parseOnly cmdParser $ clientInput
+  where
+    cmdParser = AC.choice [dmCmdParser, altDmCmdParser, quitCmdParser, kickCmdParser, helpCmdParser, statsCmdParser, broadcastCmdParser]
+    helpCmdParser = (cmdPrefixParser *> AC.string "help") $> Help
+    statsCmdParser = (cmdPrefixParser *> AC.string "stats") $> Stats
+    broadcastCmdParser = ChannelBroadcast . T.decodeUtf8 <$> A.takeTill AC.isEndOfLine
+    quitCmdParser = (cmdPrefixParser *> (AC.string "quit" <|> AC.string "exit") <* AC.endOfLine) $> Quit
+    kickCmdParser = Kick . Username . T.decodeUtf8 <$> (cmdPrefixParser *> AC.string "kick" *> AC.skipSpace *> A.takeTill AC.isEndOfLine)
+    altDmCmdParser = do
+        AC.char '@'
+        recipientUsername <- AC.takeTill isSpace
+        DM (Username (T.decodeUtf8 recipientUsername)) . T.decodeUtf8 <$> (AC.skipSpace *> A.takeTill AC.isEndOfLine)
 
--- getMaskingState >>= print
--- handleSession s c
+    dmCmdParser = do
+        cmdPrefixParser
+        AC.string "tell" <|> AC.string "dm"
+        AC.skipSpace
+        recipientUsername <- AC.takeTill isSpace
+        DM (Username (T.decodeUtf8 recipientUsername)) . T.decodeUtf8 <$> (AC.skipSpace *> A.takeTill AC.isEndOfLine)
+    cmdPrefixParser = AC.char '/'
 
--- handleInput s
+quitServer :: User -> IO ()
+quitServer (User{name, socket}) = sendAllLn socket [i|Thanks for chatting with us #{name}. Bye for now!|]
+
+validateKickStatus :: User -> IO () -> IO ()
+validateKickStatus user action = do
+    kickStatus <- readTVarIO user.kickStatus
+    case kickStatus of
+        Kicked (KickDetails{by}) -> sendAllLn user.socket [i|[Info] Sorry, since #{by} kicked you, you're banned from performing this action. Be better|]
+        NotKicked -> action
+
+dmUser :: Channel -> User -> Username -> Text -> IO ()
+dmUser defaultChannel sender recipientUsername rawMsg = do
+    let senderUsername = sender.name
+    recipientM <- atomically $ lookupUser recipientUsername defaultChannel
+    case recipientM of
+        Nothing -> sendAllLn sender.socket [i|Couldn't DM #{recipientUsername} because they aren't a member of this IRC|]
+        Just recipient -> let msg = T.encodeUtf8 rawMsg in sendAllLn recipient.socket [i|[#{senderUsername}]: #{msg}|]
+
+sendMsgToChannel :: User -> Text -> IO ()
+sendMsgToChannel (User{name, channelChan}) msg = atomically $ writeTChan channelChan [i|[Broadcast] #{name}: #{msg}|]
+
+kickUser :: Channel -> User -> Username -> IO ()
+kickUser defaultChannel kicker victimUsername = do
+    now <- getCurrentTime
+    join $ atomically $ do
+        victimM <- lookupUser victimUsername defaultChannel
+        case victimM of
+            Nothing -> pure (sendAllLn kicker.socket [i|[Info] Cannot kick #{victimUsername}. User does not exist|])
+            Just victim -> do
+                victimKickStatus <- readTVar victim.kickStatus
+                case victimKickStatus of
+                    Kicked (KickDetails{by, at}) -> pure (sendAllLn kicker.socket [i|The user #{victimUsername} has already been kicked by #{by} at #{at}|])
+                    NotKicked -> do
+                        let kickerUsername = kicker.name
+                        writeTVar victim.kickStatus (Kicked $ KickDetails{by = kickerUsername, at = now})
+                        writeTChan defaultChannel.broadcastChan [i|[Info] #{kickerUsername} has kicked #{victimUsername} from the channel|]
+                        pure (pure ())
+
+showHelpMessage :: Socket -> IO ()
+showHelpMessage socket =
+    sendAllLn
+        socket
+        [i|
+Available commands:
+    /help           - Show this help message
+    /stats          - Show channel statistics
+    /tell <user> <message>  - Send a private message to a user
+    /dm <user> <message>    - Same as /tell
+    /kick <user>    - Kick a user from the channel
+    /quit or /exit  - Leave the chat server
+
+To broadcast a message to everyone, just type your message and press enter.
+|]
+
+displayChannelStats :: Socket -> Channel -> IO ()
+displayChannelStats socket defaultChannel = join $ atomically do
+    membersMap <- readTVar defaultChannel.members
+    let totalUsers = HashMap.size membersMap
+    let members = HashMap.elems membersMap
+    let channelTitle = defaultChannel.title
+
+    memberDetails <- traverse formatMemberStatusForOutput members
+    kickedUsers <- length . filter isKicked <$> traverse (readTVar . (.kickStatus)) members
+    pure $
+        sendAllLn
+            socket
+            [i|
+Channel: #{channelTitle}
+Total users: #{totalUsers}
+Active users: #{totalUsers - kickedUsers}
+Kicked users: #{kickedUsers}
+Member Statuses:
+#{BC.unlines memberDetails}|]
+  where
+    formatMemberStatusForOutput :: User -> STM ByteString
+    formatMemberStatusForOutput (User{name, kickStatus}) = do
+        kickedStatus <- readTVar kickStatus
+        let statusText = case kickedStatus of
+                NotKicked -> "(active)" :: ByteString
+                Kicked (KickDetails{by, at}) -> [i|(kicked by #{by} at #{at})|]
+
+        pure [i|  - #{name} #{statusText}|]
 
 -- -------------------------------------------------------------------------- --
 --                                   Helpers                                  --
 -- -------------------------------------------------------------------------- --
-getDefaultChannel :: ChatServerState -> STM Channel
-getDefaultChannel chatServerStateVar = do
-    chatServerState <- readTVar chatServerStateVar.channels
-    pure $ chatServerState HashMap.! defaultChannelName
+getDefaultChannel :: ChatServerState -> Channel
+getDefaultChannel = (HashMap.! defaultChannelName) . (.channels)
 
-updateDefaultChannelMembers :: (ChannelMembership -> ChannelMembership) -> ChannelRegistry -> ChannelRegistry
-updateDefaultChannelMembers f = HashMap.adjust (over membersL f) defaultChannelName
+lookupUser :: Username -> Channel -> STM (Maybe User)
+lookupUser targetUsername defaultChannel = do
+    chanMembers <- readTVar defaultChannel.members
+    pure $ chanMembers HashMap.!? targetUsername
 
-prettyChan :: Channel -> String
-prettyChan (Channel title members _) = let memberList = HashMap.keys members in [i|Channel #{title} has the following members: #{memberList}|]
+isKicked :: KickedStatus -> Bool
+isKicked (Kicked _) = True
+isKicked NotKicked = False
 
 -- -------------------------------------------------------------------------- --
 --                                    Utils                                   --
 -- -------------------------------------------------------------------------- --
-tstrip :: Text -> Text
-tstrip = lStrip . rStrip
-  where
-    lStrip :: Text -> Text
-    lStrip = T.dropWhile isSpace
 
-    rStrip :: Text -> Text
-    rStrip = T.dropWhileEnd isSpace
+sendAllLn :: Socket -> ByteString -> IO ()
+sendAllLn socket = sendAll socket . (<> "\n")
