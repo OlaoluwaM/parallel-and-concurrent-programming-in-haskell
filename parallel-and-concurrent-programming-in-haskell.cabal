@@ -145,7 +145,6 @@ library
     , network-uri
     , normaldistribution
     , parallel
-    , parser-combinators
     , random
     , stm
     , stm-delay
